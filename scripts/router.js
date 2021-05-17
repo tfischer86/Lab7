@@ -2,10 +2,13 @@
 
 export const router = {};
 
+let body = document.querySelector("body");
+let header = document.querySelector("header h1");
+
 /**
  * Changes the "page" (state) that your SPA app is currently set to
  */
-router.setState = function() {
+router.setState = function (state, push = true) {
   /**
    * - There are three states that your SPA app will have
    *    1. The home page
@@ -35,4 +38,54 @@ router.setState = function() {
    *    1. You may add as many helper functions in this file as you like
    *    2. You may modify the parameters of setState() as much as you like
    */
+
+  // console.log(history.state, state, push);
+
+  if (state == null) {
+    state = { page: "home" };
+  }
+  if (push) {
+    if (history.state == null && state.page == "home") {
+      return;
+    }
+    if (history.state != null && history.state.page == state.page) {
+      return;
+    }
+  }
+  let journalEntries = document.querySelectorAll("journal-entry");
+
+  switch (state.page) {
+    case "entry":
+      let entryNum = state.entryNum;
+
+      body.className = "single-entry";
+      header.innerHTML = "Entry " + entryNum;
+
+      // remove the old entry-page element
+      body.querySelector("entry-page").remove();
+
+      let entryPage = document.createElement("entry-page");
+      entryPage.entry = journalEntries[entryNum - 1].entry; // entryNum is 1-indexed
+      body.appendChild(entryPage);
+
+      if (push)
+        history.pushState({ page: "entry", entryNum: entryNum }, "", "#entry" + entryNum);
+      break;
+
+    case "settings":
+      body.className = "settings";
+      header.innerHTML = "Settings";
+
+      if (push)
+        history.pushState({ page: "settings" }, "", "#settings");
+      break;
+
+    case "home":
+      body.removeAttribute("class");
+      header.innerHTML = "Journal Entries";
+
+      if (push)
+        history.pushState({ page: "home" }, "", " ");
+      break;
+  }
 }
